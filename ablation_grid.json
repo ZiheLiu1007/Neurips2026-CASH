@@ -1,0 +1,48 @@
+[
+  {
+    "name": "full_cash",
+    "patch": {}
+  },
+  {
+    "name": "no_dcls",
+    "patch": {
+      "train": {
+        "lambda_d1": 0.0,
+        "lambda_g1": 0.0
+      }
+    }
+  },
+  {
+    "name": "no_dpred",
+    "patch": {
+      "train": {
+        "lambda_d2": 0.0,
+        "lambda_g2": 0.0
+      }
+    }
+  },
+  {
+    "name": "no_itransformer",
+    "patch": {
+      "train": {
+        "disable_itransformer": true
+      }
+    }
+  },
+  {
+    "name": "no_adversarial",
+    "patch": {
+      "train": {
+        "disable_adversarial": true
+      }
+    }
+  },
+  {
+    "name": "no_grl",
+    "patch": {
+      "train": {
+        "disable_grl": true
+      }
+    }
+  }
+]
