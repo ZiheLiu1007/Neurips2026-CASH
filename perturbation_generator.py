@@ -1,25 +1,40 @@
-from torch import nn
+import torch
+import torch.nn as nn
 
 
 class CaRIIntervention(nn.Module):
-    def __init__(self, z_dim, target_norm=0.1):
+
+
+    def __init__(self, noise_std: float = 0.1, z_dim: int = 32):
+
+
         super().__init__()
-        if target_norm <= 0:
-            raise ValueError("target_norm b must be positive")
-        self.target_norm = float(target_norm)
+        self.noise_std = noise_std
+        if not 0 < noise_std < float("inf"):
+            raise ValueError("Perturbation target norm b must be finite and positive")
+        self.target_norm = float(noise_std)
         self.net = nn.Sequential(
             nn.Linear(z_dim, z_dim), nn.GELU(), nn.Linear(z_dim, z_dim)
         )
 
-        nn.init.normal_(self.net[-1].weight, std=0.02)
-        nn.init.normal_(self.net[-1].bias, std=0.01)
-
-    def perturbation(self, z):
+    def perturbation(self, z: torch.Tensor) -> torch.Tensor:
         return self.net(z)
 
-    def forward(self, z):
-        return z + self.perturbation(z)
+    def regularization(self, z: torch.Tensor, target_norm=None) -> torch.Tensor:
+        b = self.target_norm if target_norm is None else target_norm
+        if not 0 < float(b) < float("inf"):
+            raise ValueError("Perturbation target norm b must be finite and positive")
+        return (self.perturbation(z).norm(p=2, dim=-1) - b).square().mean()
 
-    def regularization(self, z):
-        delta = self.perturbation(z)
-        return (delta.norm(p=2, dim=-1) - self.target_norm).square().mean()
+    def forward(self, z: torch.Tensor) -> torch.Tensor:
+
+
+        B, N, z_dim = z.shape
+
+
+        noise = self.perturbation(z)
+
+
+        z_bar = z + noise
+
+        return z_bar
